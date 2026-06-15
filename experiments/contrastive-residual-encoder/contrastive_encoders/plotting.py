@@ -183,6 +183,8 @@ def plot_metric_by_config(
     metric_labels: Optional[Dict[str, str]] = None,
     save_dir: Optional[PathLike] = None,
     filename: Optional[str] = None,
+    reference_line_y: Optional[float] = None,
+    reference_line_label: Optional[str] = None,
 ) -> Optional[Path]:
     metric_labels = metric_labels or FRIENDLY_METRIC_NAMES
     subset = results[results["setting"] == setting].copy()
@@ -211,6 +213,16 @@ def plot_metric_by_config(
     ax.grid(axis="y")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
+
+    if reference_line_y is not None:
+        ax.axhline(
+            reference_line_y,
+            linestyle="--",
+            color="#9A3D3D",
+            linewidth=1.8,
+            label=reference_line_label or f"Reference = {reference_line_y:.2f}",
+        )
+
     ax.legend()
     return _finish_plot(fig, title=title, save_dir=save_dir, filename=filename)
 
@@ -286,6 +298,7 @@ def plot_latent_probe_r2_by_config(
     setting: str,
     title: Optional[str] = None,
     save_dir: Optional[PathLike] = None,
+    show_oracle_pve: bool = False,
 ) -> Optional[Path]:
     """
     Plot ridge-probe R^2 as percent of latent variation explained.
@@ -304,6 +317,13 @@ def plot_latent_probe_r2_by_config(
     for source, target in metric_map.items():
         plot_data[target] = 100.0 * plot_data[source]
 
+    reference_line_y = None
+    reference_line_label = None
+    if show_oracle_pve and "oracle_pve" in plot_data.columns:
+        oracle_pve = float(plot_data["oracle_pve"].dropna().mean())
+        reference_line_y = 100.0 * oracle_pve
+        reference_line_label = f"Oracle PVE = {reference_line_y:.1f}%"
+
     return plot_metric_by_config(
         plot_data,
         setting=setting,
@@ -316,6 +336,8 @@ def plot_latent_probe_r2_by_config(
             "y_probe_r2_z_y_percent": "Y embedding -> Z_y",
         },
         save_dir=save_dir,
+        reference_line_y=reference_line_y,
+        reference_line_label=reference_line_label,
     )
 
 
@@ -494,6 +516,7 @@ def plot_deterministic_snr_sweep(
     title: Optional[str] = None,
     save_dir: Optional[PathLike] = None,
     filename: Optional[str] = None,
+    show_oracle_pve: bool = False,
 ) -> Optional[Path]:
     """Plot deterministic-relation performance against target SNR."""
     plot_data = results.copy()
@@ -521,6 +544,23 @@ def plot_deterministic_snr_sweep(
             linewidth=2.1,
             label=config_name,
             color=REPORT_PALETTE[index % len(REPORT_PALETTE)],
+        )
+
+    if show_oracle_pve and "oracle_pve" in plot_data.columns:
+        oracle = (
+            plot_data.groupby("target_snr", as_index=False)["oracle_pve"]
+            .mean()
+            .sort_values("target_snr")
+        )
+        ax.plot(
+            oracle["target_snr"],
+            oracle["oracle_pve"],
+            linestyle="--",
+            marker="s",
+            markersize=4.5,
+            linewidth=1.9,
+            label="Oracle PVE",
+            color="#9A3D3D",
         )
 
     ax.axhline(0, linestyle=":", color="#202830", linewidth=1.1)
