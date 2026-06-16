@@ -1,37 +1,52 @@
-# UTSSRP CCA and Contrastive Encoder Notes
+# UTSSRP Contrastive Encoder Comparison
 
-Research notes, notebooks, experiment code, figures, and presentation outputs for
-CCA, correlation inflation, tapering, and contrastive residual encoder work.
+This project was part of the UTSSRP program. My main contribution is the
+encoder comparison experiment, which compares linear encoders, residual
+nonlinear encoders, and regularized nonlinear variants on synthetic paired-data
+settings.
 
-## Repository Layout
+The central question is:
 
-- [reference-materials](reference-materials/README.md) - background papers and slides.
-- [provided-notebooks](provided-notebooks/README.md) - starter/reference notebooks and figures.
-- [exploratory-notebooks](exploratory-notebooks/README.md) - personal exploratory analyses.
-- [experiments](experiments/README.md) - organized experiment notebooks and reusable code.
-- [presentation-outputs](presentation-outputs/README.md) - generated slide decks and presentation artifacts.
+```text
+Does the nonlinear correction help recover a real paired signal,
+or does it mostly increase the risk of fitting noise?
+```
 
-## Experiment Index
+## Start Here
 
-- [Contrastive residual encoder comparison](experiments/contrastive-residual-encoder/encoder-comparison.ipynb)
-  compares linear encoders, residual nonlinear encoders, and regularized variants.
-- [CCA tapering baseline](experiments/tapering-cca/tapering-cca-baseline.ipynb)
-  explores tapering behavior in CCA-style settings.
-- [CCA tapering exploration](experiments/tapering-cca/tapering-cca-exploration.ipynb)
-  contains additional tapering experiments and checks.
-- [Spurious correlation check](experiments/tapering-cca/spurious-correlation-check.ipynb)
-  explores spurious-correlation examples.
-- [CCA correlation inflation experiments](exploratory-notebooks/cca-correlation-inflation.ipynb)
-  investigates when CCA correlations appear inflated.
-- [Linear encoder regularization experiments](exploratory-notebooks/linear-encoder-regularization.ipynb)
-  compares regularization behavior for linear encoders.
-- [Nonlinear contrastive noise experiment](exploratory-notebooks/nonlinear-contrastive-noise.ipynb)
-  studies contrastive encoders under noise and capacity changes.
-- [General exploratory experiments](exploratory-notebooks/general-cca-experiments.ipynb)
-  collects early exploratory CCA and encoder tests.
+- [encoder-comparison.ipynb](encoder-comparison.ipynb) is the main experiment
+  notebook.
+- [contrastive_encoders/](contrastive_encoders/) contains the reusable Python
+  code imported by the notebook.
+- [reports/](reports/) contains report-facing outputs, including the final
+  slide deck, report plots, and space for the poster when it is added.
+- [reports/report-plots/](reports/report-plots/) contains PNG figures generated
+  from the experiment.
+- [reports/contrastive-encoder-comparison-final-slides.pptx](reports/contrastive-encoder-comparison-final-slides.pptx)
+  is the final slide deck for the encoder comparison.
+- [supporting-materials/](supporting-materials/) contains earlier notebooks,
+  reference PDFs, generated presentation outputs, and other supporting work.
 
-## Useful Outputs
+## Experiment Overview
 
-- [Contrastive encoder final slide deck](presentation-outputs/contrastive-encoder-final-deck/contrastive-encoder-final-12-slide-deck.pptx)
-- [Current contrastive encoder architecture deck](presentation-outputs/current-contrastive-encoder-architecture/current-contrastive-encoder-architecture.pptx)
-- [Contrastive encoder report plots](experiments/contrastive-residual-encoder/report-plots/README.md)
+The notebook compares models on noise-only, linear-signal, and cubic-signal
+paired datasets. It tracks train and held-out pair separation, shuffled-pair
+sanity checks, top-5 retrieval accuracy, latent recovery metrics, ridge-probe
+R^2 diagnostics, nonlinear-to-linear branch ratios, and similarity matrix
+heatmaps.
+
+The implementation is split so the notebook stays readable:
+
+- [contrastive_encoders/architectures.py](contrastive_encoders/architectures.py)
+  defines the encoder architectures and two-view model wrappers.
+- [contrastive_encoders/data.py](contrastive_encoders/data.py) generates the
+  synthetic paired datasets.
+- [contrastive_encoders/losses.py](contrastive_encoders/losses.py) implements
+  the contrastive objective.
+- [contrastive_encoders/experiments.py](contrastive_encoders/experiments.py)
+  builds and runs the model grid.
+- [contrastive_encoders/plotting.py](contrastive_encoders/plotting.py) creates
+  the report-ready plots.
+
+Earlier CCA, tapering, and exploratory materials are kept out of the main path
+in [supporting-materials/](supporting-materials/).
