@@ -22,8 +22,9 @@ residual nonlinear branch actually makes readable.
 
 | Path | What to use it for |
 | --- | --- |
-| [encoder_experiment_summary.pdf](encoder_experiment_summary.pdf) | Read the exported final summary first. |
-| [research-outputs/encoder_experiment_summary.pptx](research-outputs/encoder_experiment_summary.pptx) | Edit or present from the final summary deck. |
+| [my_contribution_summary.pdf](my_contribution_summary.pdf) | Read the exported final contribution summary first. |
+| [cca_contrastive_poster.pdf](cca_contrastive_poster.pdf) | Open the PDF version of the final poster. |
+| [research-outputs/my_contribution_summary.pptx](research-outputs/my_contribution_summary.pptx) | Edit or present from the final contribution summary deck. |
 | [experiment-notebooks/](experiment-notebooks/) | Follow the seven experiment notebooks in final reading order. |
 | [contrastive_encoders/](contrastive_encoders/) | Inspect the reusable Python package imported by the notebooks. |
 | [research-outputs/](research-outputs/) | Find final report plots, poster assets, and the editable deck. |
@@ -33,23 +34,34 @@ The notebooks are intentionally thin around the research flow: they set up each
 experiment, call reusable package functions, and save figures. Most reusable
 implementation details live in `contrastive_encoders/`.
 
+## Poster
+
+The final poster is available as a PDF:
+[cca_contrastive_poster.pdf](cca_contrastive_poster.pdf).
+
+<img src="research-outputs/cca_contrastive_poster.jpg" alt="CCA contrastive poster preview" width="900">
+
 ## Main Findings
 
-- Noise-only data is a memorization sanity check. Models can increase training
-  alignment even when X and Y are independent, so held-out and shuffled-pair
-  scores are the useful evidence.
-- In deterministic linear and cubic settings, held-out separation improves as
-  SNR rises, but learned encoders remain below the ideal clean/noisy
-  cosine-separation reference. The cubic relationship is harder than the
-  linear one.
-- Low-SNR settings show the clearest overfitting risk. The `alpha=1` nonlinear
-  model has the strongest excess train-over-ideal warning, while smaller alpha
-  and regularized variants are more controlled.
-- Scalar branch probes give positive evidence that the residual nonlinear
-  branch carries nonlinear structure. For square and cubic targets, curvature
-  is more readable from the nonlinear branch and combined embedding than from
-  the linear branch alone. Recovery is partial; the exponential target still
-  under-shoots in the tail.
+This project was mostly about checking when contrastive encoders are learning
+real shared structure, and when they are just fitting the training pairs.
+
+- **Noise-only experiments were useful as a baseline.** When `X` and `Y` are
+  independent, the model can still improve training alignment. That by itself
+  does not mean it learned anything meaningful. The important checks are
+  held-out performance and shuffled-pair tests.
+- **Signal strength matters.** In the linear and cubic experiments, the model
+  performed better as the signal-to-noise ratio increased. However, the learned
+  embeddings still stayed below the ideal clean/noisy reference, especially for
+  the cubic case.
+- **Low-SNR settings showed the most overfitting.** The nonlinear model with
+  `alpha=1` had the clearest train-vs-held-out gap, while smaller nonlinear
+  weights and regularized variants behaved more conservatively.
+- **The nonlinear branch did learn useful nonlinear structure.** In the scalar
+  probe experiments, the nonlinear branch and combined embedding recovered the
+  quadratic and cubic shapes much better than the linear branch alone. The
+  recovery was not perfect, especially for the exponential target, where the
+  model underestimated the tail.
 
 ## Notebook Guide
 
@@ -183,12 +195,12 @@ Final curated outputs live in [research-outputs/](research-outputs/):
   the report-ready PNG plots generated for the completed contribution.
 - [research-outputs/poster-assets/](research-outputs/poster-assets/) contains
   the final scalar branch-probe poster figures.
-- [research-outputs/encoder_experiment_summary.pptx](research-outputs/encoder_experiment_summary.pptx)
-  is the editable final summary deck.
+- [research-outputs/cca_contrastive_poster.jpg](research-outputs/cca_contrastive_poster.jpg)
+  is the poster preview image used in this README.
+- [research-outputs/my_contribution_summary.pptx](research-outputs/my_contribution_summary.pptx)
+  is the editable final contribution summary deck.
 
-Some notebook output logs still show the historical `reports/` path from
-earlier runs. For regeneration in the final layout, set notebook output cells to
-use:
+Notebook output cells now write final artifacts directly to:
 
 ```python
 PLOT_DIR = module_root / "research-outputs" / "report-plots"

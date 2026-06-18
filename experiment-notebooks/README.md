@@ -70,9 +70,7 @@ The curated final outputs live in:
 - [../research-outputs/report-plots/](../research-outputs/report-plots/)
 - [../research-outputs/poster-assets/](../research-outputs/poster-assets/)
 
-Some notebook cells and saved output logs still mention the older `reports/`
-folder name from earlier project runs. If regenerating the final artifacts, set
-the output path cells to:
+Notebook output cells now write final artifacts directly to:
 
 ```python
 PLOT_DIR = module_root / "research-outputs" / "report-plots"
