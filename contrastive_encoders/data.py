@@ -277,6 +277,14 @@ def deterministic_relation(
         return X_used**3
     if relationship == "exponential":
         return np.exp(X_used)
+    if relationship == "log":
+        if np.any(X_used <= 0):
+            raise ValueError("relationship 'log' requires all selected X values to be positive.")
+        return np.log(X_used)
+    if relationship == "reciprocal":
+        if np.any(X_used == 0):
+            raise ValueError("relationship 'reciprocal' requires all selected X values to be nonzero.")
+        return 1.0 / X_used
     if relationship == "signed_log":
         return np.sign(X_used) * np.log1p(np.abs(X_used))
     if relationship == "sine":
@@ -284,7 +292,7 @@ def deterministic_relation(
 
     raise ValueError(
         "relationship must be 'linear', 'quadratic', 'cubic', "
-        "'exponential', 'signed_log', or 'sine'."
+        "'exponential', 'log', 'reciprocal', 'signed_log', or 'sine'."
     )
 
 

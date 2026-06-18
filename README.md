@@ -1,77 +1,95 @@
 # UTSSRP Contrastive Encoder Comparison
 
-This project was part of the UTSSRP program. My main contribution is the
-encoder comparison experiment, which compares linear encoders, residual
-nonlinear encoders, and regularized nonlinear variants on synthetic paired-data
-settings.
+Project dates: June 8-19, 2026
 
-The central question is:
+This repository contains materials from an open-ended UTSSRP research project
+on CCA and contrastive encoders. My final contribution focuses on comparing
+linear encoders, residual nonlinear encoders, and regularized nonlinear
+variants on controlled synthetic paired-data problems.
+
+The question I focused on was:
 
 ```text
-Does the nonlinear correction help recover a real paired signal,
-or does it mostly increase the risk of fitting noise?
+When Y = f(X) + noise, does the nonlinear contrastive encoder recover the
+real paired signal, or does the extra capacity mostly memorize training pairs?
 ```
+
+That contribution focuses on deterministic signal recovery, overfitting against
+an ideal clean/noisy reference, and branch-probe diagnostics that ask what the
+residual nonlinear branch actually makes readable.
 
 ## Start Here
 
-- [experiment-notebooks/](experiment-notebooks/) contains the split experiment
-  notebooks. Start with
-  [01-latent-signal-comparison.ipynb](experiment-notebooks/01-latent-signal-comparison.ipynb),
-  then run the sweep and deterministic-relation notebooks as needed.
-- [contrastive_encoders/](contrastive_encoders/) contains the reusable Python
-  code imported by the notebook.
-- [reports/](reports/) contains report-facing outputs, including the final
-  slide deck, report plots, and space for the poster when it is added.
-- [reports/report-plots/](reports/report-plots/) contains PNG figures generated
-  from the experiment.
-- [reports/contrastive-encoder-comparison-final-slides.pptx](reports/contrastive-encoder-comparison-final-slides.pptx)
-  is the final slide deck for the encoder comparison.
-- [supporting-materials/](supporting-materials/) contains earlier notebooks,
-  reference PDFs, generated presentation outputs, and other supporting work.
+| Path | What to use it for |
+| --- | --- |
+| [encoder_experiment_summary.pdf](encoder_experiment_summary.pdf) | Read the exported final summary first. |
+| [research-outputs/encoder_experiment_summary.pptx](research-outputs/encoder_experiment_summary.pptx) | Edit or present from the final summary deck. |
+| [experiment-notebooks/](experiment-notebooks/) | Follow the seven experiment notebooks in final reading order. |
+| [contrastive_encoders/](contrastive_encoders/) | Inspect the reusable Python package imported by the notebooks. |
+| [research-outputs/](research-outputs/) | Find final report plots, poster assets, and the editable deck. |
+| [additional-research-materials/](additional-research-materials/) | Browse earlier CCA notebooks, references, and intermediate material. |
 
-The notebooks are intentionally thin: they set up each experiment, display the
-model table, run the comparison, and plot the metrics. Most implementation
-details live in the package files.
+The notebooks are intentionally thin around the research flow: they set up each
+experiment, call reusable package functions, and save figures. Most reusable
+implementation details live in `contrastive_encoders/`.
 
-The later notebook sections add diagnostic plots: train/test separation for
-each dataset, top-5 retrieval accuracy, latent-correlation comparisons,
-ridge-probe R^2 plots, branch-ratio history and similarity matrix heatmaps for
-the linear and cubic signal settings, an alpha sweep, a signal/noise sweep, and
-deterministic-relation checks with explicit SNR.
+## Main Findings
 
-When the notebooks run, every plot is also saved as a report-ready PNG in
-[reports/report-plots/](reports/report-plots/). File names are generated from
-the plot titles so they are easy to match with the notebook sections.
+- Noise-only data is a memorization sanity check. Models can increase training
+  alignment even when X and Y are independent, so held-out and shuffled-pair
+  scores are the useful evidence.
+- In deterministic linear and cubic settings, held-out separation improves as
+  SNR rises, but learned encoders remain below the ideal clean/noisy
+  cosine-separation reference. The cubic relationship is harder than the
+  linear one.
+- Low-SNR settings show the clearest overfitting risk. The `alpha=1` nonlinear
+  model has the strongest excess train-over-ideal warning, while smaller alpha
+  and regularized variants are more controlled.
+- Scalar branch probes give positive evidence that the residual nonlinear
+  branch carries nonlinear structure. For square and cubic targets, curvature
+  is more readable from the nonlinear branch and combined embedding than from
+  the linear branch alone. Recovery is partial; the exponential target still
+  under-shoots in the tail.
 
 ## Notebook Guide
 
-- [01-latent-signal-comparison.ipynb](experiment-notebooks/01-latent-signal-comparison.ipynb)
-  is the main paired-view comparison on noise-only, linear-signal, and
-  cubic-signal synthetic data.
-- [02-alpha-and-signal-noise-sweeps.ipynb](experiment-notebooks/02-alpha-and-signal-noise-sweeps.ipynb)
-  explores the nonlinear branch scale `alpha` and signal/noise strength.
-- [03-deterministic-relations.ipynb](experiment-notebooks/03-deterministic-relations.ipynb)
-  tests direct relationships `Y = f(X) + epsilon` with explicit SNR, including
-  linear, cubic, exponential, and signed-log targets.
-- [04-deterministic-pve-to-cosine-reference.ipynb](experiment-notebooks/04-deterministic-pve-to-cosine-reference.ipynb)
-  converts ideal PVE into an ideal cosine-separation reference for the
-  deterministic plots and adds overfitting diagnostics versus SNR.
+1. [01-latent-signal-comparison.ipynb](experiment-notebooks/01-latent-signal-comparison.ipynb)
+   runs the first paired-view comparison on noise-only, linear-signal, and
+   cubic-signal synthetic datasets.
+2. [02-alpha-and-signal-noise-sweeps.ipynb](experiment-notebooks/02-alpha-and-signal-noise-sweeps.ipynb)
+   sweeps nonlinear branch scale `alpha` and signal/noise strength.
+3. [03-deterministic-relations.ipynb](experiment-notebooks/03-deterministic-relations.ipynb)
+   tests deterministic relationships `Y = f(X) + epsilon` with explicit SNR,
+   including linear, cubic, exponential, and signed-log targets.
+4. [04-deterministic-pve-to-cosine-reference.ipynb](experiment-notebooks/04-deterministic-pve-to-cosine-reference.ipynb)
+   converts ideal PVE into the cosine-separation scale used by the plots and
+   builds overfitting diagnostics.
+5. [05-function-and-weight-checks.ipynb](experiment-notebooks/05-function-and-weight-checks.ipynb)
+   checks scalar function readouts, coordinate probes, and linear-branch
+   weight behavior.
+6. [06-alpha1-branch-decomposition.ipynb](experiment-notebooks/06-alpha1-branch-decomposition.ipynb)
+   decomposes one `alpha=1` residual model into linear-branch, nonlinear-branch,
+   and combined readouts.
+7. [07-alpha1-scalar-cubic-result-only.ipynb](experiment-notebooks/07-alpha1-scalar-cubic-result-only.ipynb)
+   contains the final scalar branch-probe results for cubic, quadratic,
+   exponential, log, and reciprocal targets, plus poster-ready summary figures.
 
-## Experiment Settings
+If you only want the final story, read the summary deck/PDF first, then inspect
+notebooks 03, 04, 06, and 07.
 
-The experiment compares models on:
+## Experiment Design
+
+The main experiments compare the model grid on:
 
 - `Noise only`: X and Y are independent Gaussian noise.
-- `Linear signal`: X has latent `Z_x`, Y has latent `Z_y`, and `Z_y = Z_x`.
-- `Cubic signal`: X has latent `Z_x`, Y has latent `Z_y`, and
-  `Z_y = standardized(Z_x ** 3)`.
+- `Linear signal`: paired views share a linear latent relationship.
+- `Cubic signal`: paired views share a standardized cubic latent relationship.
+- Deterministic relations: `Y = f(X) + epsilon` with explicit SNR and an
+  empirical ideal cosine-separation reference.
+- Scalar branch probes: `p=q=1` deterministic targets used to visualize what is
+  readable from the linear and nonlinear branches.
 
-This is meant to mimic a two-view setup, such as captions and images, where the
-views are different but paired through an underlying relationship.
-
-## Model Families
-
-The model grid includes:
+The main model families are:
 
 - `Linear encoder (alpha=0)`
 - `MLP nonlinear (alpha=0.01)`
@@ -80,16 +98,7 @@ The model grid includes:
 - `L1-regularized nonlinear (alpha=0.10)`
 - `L2-regularized nonlinear (alpha=0.10)`
 
-All nonlinear models in the main grid use the same one-hidden-layer MLP size:
-`128 -> 16 -> 4` for X and `128 -> 16 -> 4` for Y. Keeping this fixed makes
-the alpha comparison cleaner because alpha changes while MLP capacity stays the
-same.
-
-The L1-regularized model applies lasso to the input-facing nonlinear layer
-`A2`. The L2-regularized model applies ridge-style shrinkage to the nonlinear
-weights `A1` and `A2`.
-
-For the residual nonlinear models:
+For residual nonlinear encoders:
 
 ```text
 g(u) = Normalize(G u) + alpha * Normalize(A1 sigma(A2 u + b))
@@ -101,106 +110,136 @@ For the pure linear baseline:
 g(u) = Normalize(G u)
 ```
 
-The normalization layers use `BatchNorm1d(..., affine=False)`. In the residual
-models, this makes `alpha` meaningfully control the size of the nonlinear
-correction. In the pure linear model, it keeps the embedding scale controlled
-before the raw-dot-product loss sees it.
+The final architecture keeps the embedding dimension at 4 and the nonlinear
+hidden layer at 16 for the main comparisons. `BatchNorm1d(..., affine=False)`
+normalizes branch outputs so `alpha` meaningfully controls the residual
+nonlinear correction size.
 
-The normalization is applied to branch outputs, not to the weights. In other
-words, the model normalizes `G u` and `A1 sigma(A2 u + b)` after they have been
-computed. This matters because increasing `A1` cannot simply cancel a small
-`alpha`; the nonlinear branch is normalized before `alpha` is applied.
+## Cosine Separation Metric
 
-Normalizing the linear branch inside the residual model also puts the linear and
-nonlinear branches on comparable scale. Then `alpha=0.10` can be interpreted as
-the nonlinear correction being much smaller than the linear branch. The absolute
-embedding size is less important here than whether the embedding preserves the
-paired structure we care about. One caveat is that the paper loss uses raw inner
-products, so scale can still affect optimization; normalization is used here to
-make the architecture comparison more controlled.
+Most of the main plots use the same pair-separation metric. This metric is
+inspired by the contrastive loss function, which aims to make paired X/Y
+embeddings more similar than unpaired X/Y embeddings. In this project, the
+diagnostic uses cosine similarity so the score measures whether true pairs
+stand out from mismatched pairs after normalization.
 
-## Package Organization
+For a batch of paired embeddings `(z_i^x, z_i^y)`, first normalize each
+embedding row:
 
-The implementation is split so the notebook stays readable:
+```text
+hat(z_i^x) = z_i^x / ||z_i^x||_2
+hat(z_j^y) = z_j^y / ||z_j^y||_2
+```
 
-- [contrastive_encoders/architectures.py](contrastive_encoders/architectures.py)
-  defines the linear encoder, residual nonlinear encoder, two-view model
-  wrappers, and model builder.
-- [contrastive_encoders/data.py](contrastive_encoders/data.py) generates the
-  synthetic paired datasets, including independent noise, linear latent
-  relationships, and cubic latent relationships.
-- [contrastive_encoders/losses.py](contrastive_encoders/losses.py) implements
-  the paper contrastive objective exactly as a PyTorch loss.
-- [contrastive_encoders/regularization.py](contrastive_encoders/regularization.py)
-  contains L1, L2, and nonlinear-output penalties.
-- [contrastive_encoders/metrics.py](contrastive_encoders/metrics.py) computes
-  alignment, retrieval, correlation, and latent recovery metrics.
-- [contrastive_encoders/training.py](contrastive_encoders/training.py) trains
-  one model on one dataset and returns all diagnostics.
-- [contrastive_encoders/experiments.py](contrastive_encoders/experiments.py)
-  builds the model grid, creates all datasets, and runs the full comparison.
-- [contrastive_encoders/plotting.py](contrastive_encoders/plotting.py) creates
-  the notebook plots.
-- [contrastive_encoders/__init__.py](contrastive_encoders/__init__.py)
-  re-exports the main functions and classes for cleaner notebook imports.
+Then form the cosine-similarity matrix:
+
+```text
+S_ij = hat(z_i^x) dot hat(z_j^y)
+```
+
+The separation score is:
+
+```text
+separation =
+    mean_i S_ii
+    - mean_{i != j} S_ij
+```
+
+Equivalently:
+
+```text
+separation =
+    (1 / n) sum_i S_ii
+    - (1 / (n^2 - n)) sum_{i != j} S_ij
+```
+
+The diagonal terms `S_ii` are the true X/Y pairs. The off-diagonal terms
+`S_ij`, where `i != j`, are mismatched pairs. A high separation score means the
+model gives true pairs higher cosine similarity than mismatched pairs. A score
+near zero means true pairs are not standing out from mismatches.
 
 ## Main Metrics
 
-- `train_pair_separation`
-  True X/Y training pairs are more similar than mismatched pairs.
+- `train_pair_separation`: this separation score on training pairs.
+- `test_pair_separation`: the same separation score on held-out pairs.
+- `shuffled_pair_separation`: the same score after breaking the X/Y pairing.
+- `test_top5_pair_match_accuracy`: held-out retrieval accuracy.
+- `x_signal_recovery`, `x_related_signal_recovery`, `y_signal_recovery`:
+  latent-recovery correlations.
+- `x_probe_r2_z_x`, `x_probe_r2_z_y`, `y_probe_r2_z_y`: held-out ridge-probe
+  R^2 diagnostics.
+- `mean_nonlinear_to_linear_ratio`: measured nonlinear branch size relative to
+  the linear branch.
+- `ideal_cosine_separation`: empirical clean/noisy deterministic reference on
+  the same scale as the separation plots.
+- `excess_train_over_ideal`: clipped overfitting warning,
+  `max(train separation - ideal separation, 0)`.
 
-- `test_pair_separation`
-  The same separation on held-out pairs.
+## Outputs
 
-- `shuffled_pair_separation`
-  Sanity check after breaking the X/Y pairing; should stay near zero.
+Final curated outputs live in [research-outputs/](research-outputs/):
 
-- `test_top5_pair_match_accuracy`
-  Held-out retrieval check: for each X sample, whether its true paired Y sample
-  is among the 5 most similar Y samples.
+- [research-outputs/report-plots/](research-outputs/report-plots/) contains
+  the report-ready PNG plots generated for the completed contribution.
+- [research-outputs/poster-assets/](research-outputs/poster-assets/) contains
+  the final scalar branch-probe poster figures.
+- [research-outputs/encoder_experiment_summary.pptx](research-outputs/encoder_experiment_summary.pptx)
+  is the editable final summary deck.
 
-- `x_signal_recovery`
-  How well the X embedding recovers the true X latent `Z_x`.
+Some notebook output logs still show the historical `reports/` path from
+earlier runs. For regeneration in the final layout, set notebook output cells to
+use:
 
-- `x_related_signal_recovery`
-  How well the X embedding recovers the paired Y latent `Z_y`. In the cubic
-  setting, this means `Z_y = standardized(Z_x ** 3)`.
+```python
+PLOT_DIR = module_root / "research-outputs" / "report-plots"
+POSTER_PLOT_DIR = module_root / "research-outputs" / "poster-assets"
+```
 
-- `y_signal_recovery`
-  How well the Y embedding recovers the true Y latent `Z_y`.
+## Package Organization
 
-- `x_probe_r2_z_x`, `x_probe_r2_z_y`, `y_probe_r2_z_y`
-  Held-out ridge-probe R^2 scores. These measure how much of the true latent
-  variation can be explained from the learned embedding using a simple ridge
-  regression fit on the training data. In the plots these are shown as
-  percentages.
+- [contrastive_encoders/architectures.py](contrastive_encoders/architectures.py)
+  defines the linear encoder, residual nonlinear encoder, two-view wrappers,
+  and model builder.
+- [contrastive_encoders/data.py](contrastive_encoders/data.py) generates null,
+  paired latent, shared-signal, nonlinear shared-signal, and deterministic SNR
+  datasets.
+- [contrastive_encoders/losses.py](contrastive_encoders/losses.py) implements
+  the paired contrastive objective.
+- [contrastive_encoders/regularization.py](contrastive_encoders/regularization.py)
+  contains L1, L2, and nonlinear-output penalties.
+- [contrastive_encoders/metrics.py](contrastive_encoders/metrics.py) computes
+  alignment, retrieval, correlation, and latent-probe metrics.
+- [contrastive_encoders/training.py](contrastive_encoders/training.py) trains
+  one model and returns diagnostics or full artifacts.
+- [contrastive_encoders/experiments.py](contrastive_encoders/experiments.py)
+  builds model grids and runs the notebook experiment batches.
+- [contrastive_encoders/interpretability.py](contrastive_encoders/interpretability.py)
+  contains ridge-probe helpers used by the branch-readout notebooks.
+- [contrastive_encoders/plotting.py](contrastive_encoders/plotting.py) creates
+  notebook and report plots.
+- [contrastive_encoders/__init__.py](contrastive_encoders/__init__.py)
+  re-exports the main functions and classes for cleaner notebook imports.
 
-- `mean_nonlinear_to_linear_ratio`
-  Diagnostic showing the measured nonlinear branch size relative to the linear
-  branch. This should increase as `alpha` increases.
+## Running The Notebooks
 
-## Typical Workflow
+Open notebooks from the repository root or from `experiment-notebooks/`. The
+setup cells add the repository root to `sys.path`, so local package imports work
+without installing the package.
 
-1. Open [01-latent-signal-comparison.ipynb](experiment-notebooks/01-latent-signal-comparison.ipynb).
-2. Run the imports and model table cells.
-3. Run the main experiment cell.
-4. Inspect the focused comparison table and main plots.
-5. Open [02-alpha-and-signal-noise-sweeps.ipynb](experiment-notebooks/02-alpha-and-signal-noise-sweeps.ipynb)
-   for the slower alpha and signal/noise comparisons.
-6. Open [03-deterministic-relations.ipynb](experiment-notebooks/03-deterministic-relations.ipynb)
-   for explicit-SNR deterministic checks and similarity matrices.
-7. Open [04-deterministic-pve-to-cosine-reference.ipynb](experiment-notebooks/04-deterministic-pve-to-cosine-reference.ipynb)
-   to inspect the PVE-to-cosine reference conversion and overfitting plots.
-8. Use the generated PNG files in [reports/report-plots/](reports/report-plots/)
-   for your report.
-
-If the import cell complains after code edits, restart the notebook kernel and
-run the notebook from the top.
+The notebooks use Python with Jupyter, NumPy, Pandas, PyTorch, and Matplotlib.
+If imports fail after code edits, restart the notebook kernel and run from the
+top.
 
 ## Credits
 
-Parts of this project were implemented with help from Codex. I guided the
-experiment design, reviewed the code, and interpreted the results.
+This project was supervised by Professor Ricardo Baptista and TA Luis Sierra.
+The project contributors were Baher Alabbar, Niv Karo, Doris Ding, and Masha
+Glasman.
 
-Earlier CCA, tapering, and exploratory materials are kept out of the main path
-in [supporting-materials/](supporting-materials/).
+My main contribution focused on the contrastive-encoder side of the project.
+Niv Karo, Doris Ding, and Masha Glasman mainly focused on the CCA analysis and
+on investigating solutions to the correlation-inflation problem.
+
+Parts of the encoder-side implementation and documentation were developed with
+help from Codex. I guided the experiment design, reviewed the code, and
+interpreted the results.
