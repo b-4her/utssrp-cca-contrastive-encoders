@@ -6,7 +6,7 @@ each model on the noise-only, linear-signal, and cubic-signal datasets.
 
 from __future__ import annotations
 
-from typing import Dict, List, Sequence
+from typing import Dict, List, Mapping, Optional, Sequence
 
 import numpy as np
 import pandas as pd
@@ -415,6 +415,7 @@ def run_deterministic_relation_experiment(
     n_test: int = 800,
     p: int = 128,
     q: int = 128,
+    x_std_by_relationship: Optional[Mapping[str, float]] = None,
 ) -> pd.DataFrame:
     """
     Run models on direct deterministic relations Y = f(X) + epsilon.
@@ -427,8 +428,10 @@ def run_deterministic_relation_experiment(
     by projecting low-dimensional latents into noisy high-dimensional views.
     """
     records = []
+    x_std_by_relationship = x_std_by_relationship or {}
 
     for relationship_index, relationship in enumerate(relationships):
+        x_std = float(x_std_by_relationship.get(relationship, 1.0))
         for snr_index, target_snr in enumerate(snr_values):
             dataset_seed = seed + 1000 * relationship_index + snr_index
             rng = np.random.default_rng(dataset_seed)
@@ -440,6 +443,7 @@ def run_deterministic_relation_experiment(
                 relationship=relationship,
                 target_snr=float(target_snr),
                 rng=rng,
+                x_std=x_std,
             )
             snr_info = deterministic_dataset_snr(dataset)
             setting_name = f"Deterministic {relationship}"
@@ -457,6 +461,7 @@ def run_deterministic_relation_experiment(
                     {
                         "setting": setting_name,
                         "relationship": relationship,
+                        "x_std": x_std,
                         "target_snr": float(target_snr),
                         "realized_snr": snr_info["realized_snr"],
                         "realized_signal_variance": snr_info[

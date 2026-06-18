@@ -14,8 +14,10 @@ or does it mostly increase the risk of fitting noise?
 
 ## Start Here
 
-- [encoder-comparison.ipynb](encoder-comparison.ipynb) is the main experiment
-  notebook. Run this from top to bottom.
+- [experiment-notebooks/](experiment-notebooks/) contains the split experiment
+  notebooks. Start with
+  [01-latent-signal-comparison.ipynb](experiment-notebooks/01-latent-signal-comparison.ipynb),
+  then run the sweep and deterministic-relation notebooks as needed.
 - [contrastive_encoders/](contrastive_encoders/) contains the reusable Python
   code imported by the notebook.
 - [reports/](reports/) contains report-facing outputs, including the final
@@ -27,18 +29,33 @@ or does it mostly increase the risk of fitting noise?
 - [supporting-materials/](supporting-materials/) contains earlier notebooks,
   reference PDFs, generated presentation outputs, and other supporting work.
 
-The notebook is intentionally thin: it sets up the experiment, displays the
-model table, runs the comparison, and plots the metrics. Most implementation
+The notebooks are intentionally thin: they set up each experiment, display the
+model table, run the comparison, and plot the metrics. Most implementation
 details live in the package files.
 
 The later notebook sections add diagnostic plots: train/test separation for
 each dataset, top-5 retrieval accuracy, latent-correlation comparisons,
 ridge-probe R^2 plots, branch-ratio history and similarity matrix heatmaps for
-the linear and cubic signal settings, an alpha sweep, and a signal/noise sweep.
+the linear and cubic signal settings, an alpha sweep, a signal/noise sweep, and
+deterministic-relation checks with explicit SNR.
 
-When the notebook runs, every plot is also saved as a report-ready PNG in
+When the notebooks run, every plot is also saved as a report-ready PNG in
 [reports/report-plots/](reports/report-plots/). File names are generated from
 the plot titles so they are easy to match with the notebook sections.
+
+## Notebook Guide
+
+- [01-latent-signal-comparison.ipynb](experiment-notebooks/01-latent-signal-comparison.ipynb)
+  is the main paired-view comparison on noise-only, linear-signal, and
+  cubic-signal synthetic data.
+- [02-alpha-and-signal-noise-sweeps.ipynb](experiment-notebooks/02-alpha-and-signal-noise-sweeps.ipynb)
+  explores the nonlinear branch scale `alpha` and signal/noise strength.
+- [03-deterministic-relations.ipynb](experiment-notebooks/03-deterministic-relations.ipynb)
+  tests direct relationships `Y = f(X) + epsilon` with explicit SNR, including
+  linear, cubic, exponential, and signed-log targets.
+- [04-deterministic-pve-to-cosine-reference.ipynb](experiment-notebooks/04-deterministic-pve-to-cosine-reference.ipynb)
+  converts ideal PVE into an ideal cosine-separation reference for the
+  deterministic plots and adds overfitting diagnostics versus SNR.
 
 ## Experiment Settings
 
@@ -164,14 +181,17 @@ The implementation is split so the notebook stays readable:
 
 ## Typical Workflow
 
-1. Open [encoder-comparison.ipynb](encoder-comparison.ipynb).
+1. Open [01-latent-signal-comparison.ipynb](experiment-notebooks/01-latent-signal-comparison.ipynb).
 2. Run the imports and model table cells.
-3. Run the experiment cell.
-4. Inspect the focused comparison table.
-5. Inspect the plots, especially the noise-only and cubic-signal panels.
-6. Run the sweep sections when you want the slower alpha and signal/noise
-   comparisons.
-7. Use the generated PNG files in [reports/report-plots/](reports/report-plots/)
+3. Run the main experiment cell.
+4. Inspect the focused comparison table and main plots.
+5. Open [02-alpha-and-signal-noise-sweeps.ipynb](experiment-notebooks/02-alpha-and-signal-noise-sweeps.ipynb)
+   for the slower alpha and signal/noise comparisons.
+6. Open [03-deterministic-relations.ipynb](experiment-notebooks/03-deterministic-relations.ipynb)
+   for explicit-SNR deterministic checks and similarity matrices.
+7. Open [04-deterministic-pve-to-cosine-reference.ipynb](experiment-notebooks/04-deterministic-pve-to-cosine-reference.ipynb)
+   to inspect the PVE-to-cosine reference conversion and overfitting plots.
+8. Use the generated PNG files in [reports/report-plots/](reports/report-plots/)
    for your report.
 
 If the import cell complains after code edits, restart the notebook kernel and

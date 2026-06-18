@@ -35,6 +35,12 @@ from .experiments import (
     run_signal_noise_sweep,
 )
 from .losses import paper_contrastive_loss
+from .interpretability import (
+    RidgeProbe,
+    cubic_coordinate_probe_curve,
+    fit_ridge_probe,
+    predict_ridge_probe,
+)
 from .metrics import (
     alignment_gap,
     columnwise_correlations,
@@ -49,6 +55,7 @@ from .plotting import (
     friendly_results_table,
     plot_alpha_sweep_curve,
     plot_branch_ratio_history,
+    plot_coordinate_probe_curves,
     plot_deterministic_snr_sweep,
     plot_latent_probe_r2_by_config,
     plot_metric_by_config,

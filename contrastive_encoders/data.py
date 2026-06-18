@@ -275,10 +275,17 @@ def deterministic_relation(
         return X_used**2
     if relationship == "cubic":
         return X_used**3
+    if relationship == "exponential":
+        return np.exp(X_used)
+    if relationship == "signed_log":
+        return np.sign(X_used) * np.log1p(np.abs(X_used))
     if relationship == "sine":
         return np.sin(X_used)
 
-    raise ValueError("relationship must be 'linear', 'quadratic', 'cubic', or 'sine'.")
+    raise ValueError(
+        "relationship must be 'linear', 'quadratic', 'cubic', "
+        "'exponential', 'signed_log', or 'sine'."
+    )
 
 
 def generate_deterministic_relation_dataset(
@@ -289,6 +296,7 @@ def generate_deterministic_relation_dataset(
     relationship: str,
     target_snr: float,
     rng: np.random.Generator,
+    x_std: float = 1.0,
 ) -> PairedDataset:
     """
     Generate Y = f(X) + epsilon with an explicit signal-to-noise ratio.
@@ -304,9 +312,11 @@ def generate_deterministic_relation_dataset(
     """
     if target_snr <= 0:
         raise ValueError("target_snr must be positive.")
+    if x_std <= 0:
+        raise ValueError("x_std must be positive.")
 
-    X_train = rng.standard_normal((n_train, p))
-    X_test = rng.standard_normal((n_test, p))
+    X_train = x_std * rng.standard_normal((n_train, p))
+    X_test = x_std * rng.standard_normal((n_test, p))
 
     Y_clean_train = deterministic_relation(X_train, q=q, relationship=relationship)
     Y_clean_test = deterministic_relation(X_test, q=q, relationship=relationship)
@@ -331,7 +341,7 @@ def generate_deterministic_relation_dataset(
 
 def deterministic_dataset_snr(dataset: PairedDataset) -> dict[str, float]:
     """
-    Estimate realized SNR and oracle PVE for a deterministic-relation dataset.
+    Estimate realized SNR and ideal PVE for a deterministic-relation dataset.
 
     If Y_clean = f(X) and Y = Y_clean + epsilon, then the best possible
     prediction function f has:

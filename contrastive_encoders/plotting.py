@@ -29,6 +29,7 @@ REPORT_PALETTE = [
 ]
 
 HEATMAP_CMAP = "cividis"
+REFERENCE_LINE_COLOR = "#C62828"
 
 
 def set_report_plot_style() -> None:
@@ -76,11 +77,13 @@ FRIENDLY_COLUMN_NAMES: Dict[str, str] = {
     "l2_nonlinear": "Nonlinear L2 penalty",
     "nonlinear_output_strength": "Nonlinear output penalty",
     "relationship": "Deterministic relation",
+    "x_std": "X standard deviation",
+    "snr_level": "SNR level",
     "target_snr": "Target SNR",
     "realized_snr": "Realized SNR",
     "realized_signal_variance": "Realized signal variance",
     "realized_noise_variance": "Realized noise variance",
-    "oracle_pve": "Oracle PVE",
+    "oracle_pve": "Ideal PVE",
     "parameter_count": "Trainable parameters",
     "parameter_count_per_train_sample": "Parameters per training pair",
     "train_best_view_correlation": "Train X/Y embedding correlation",
@@ -105,6 +108,13 @@ FRIENDLY_COLUMN_NAMES: Dict[str, str] = {
     "y_nonlinear_branch_norm": "Y nonlinear branch norm",
     "y_nonlinear_to_linear_ratio": "Y nonlinear/linear ratio",
     "mean_nonlinear_to_linear_ratio": "Mean nonlinear/linear ratio",
+    "observation": "Observation",
+    "coordinate": "Coordinate",
+    "curve_rmse": "Curve RMSE",
+    "curve_correlation": "Curve correlation",
+    "true_range": "True curve range",
+    "prediction_range": "Predicted curve range",
+    "range_ratio": "Predicted/true range",
 }
 
 
@@ -164,7 +174,10 @@ def _finish_plot(
     if output_path is not None:
         fig.savefig(output_path, dpi=dpi, facecolor="white")
 
-    plt.show()
+    if "agg" in plt.get_backend().lower():
+        plt.close(fig)
+    else:
+        plt.show()
     return output_path
 
 
@@ -218,7 +231,7 @@ def plot_metric_by_config(
         ax.axhline(
             reference_line_y,
             linestyle="--",
-            color="#9A3D3D",
+            color=REFERENCE_LINE_COLOR,
             linewidth=1.8,
             label=reference_line_label or f"Reference = {reference_line_y:.2f}",
         )
@@ -322,7 +335,7 @@ def plot_latent_probe_r2_by_config(
     if show_oracle_pve and "oracle_pve" in plot_data.columns:
         oracle_pve = float(plot_data["oracle_pve"].dropna().mean())
         reference_line_y = 100.0 * oracle_pve
-        reference_line_label = f"Oracle PVE = {reference_line_y:.1f}%"
+        reference_line_label = f"Ideal PVE = {reference_line_y:.1f}%"
 
     return plot_metric_by_config(
         plot_data,
@@ -559,8 +572,8 @@ def plot_deterministic_snr_sweep(
             marker="s",
             markersize=4.5,
             linewidth=1.9,
-            label="Oracle PVE",
-            color="#9A3D3D",
+            label="Ideal PVE",
+            color=REFERENCE_LINE_COLOR,
         )
 
     ax.axhline(0, linestyle=":", color="#202830", linewidth=1.1)
@@ -573,4 +586,63 @@ def plot_deterministic_snr_sweep(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.legend()
+    return _finish_plot(fig, title=title, save_dir=save_dir, filename=filename)
+
+
+def plot_coordinate_probe_curves(
+    curves: pd.DataFrame,
+    title: str,
+    save_dir: Optional[PathLike] = None,
+    filename: Optional[str] = None,
+) -> Optional[Path]:
+    """
+    Plot swept-coordinate probe predictions against the true deterministic curve.
+
+    The expected input has one row per swept x value and includes observation,
+    x_value, true_y, and probed_y columns.
+    """
+    observations = list(curves["observation"].drop_duplicates())
+    if not observations:
+        raise ValueError("curves must contain at least one observation.")
+
+    fig, axes = plt.subplots(
+        1,
+        len(observations),
+        figsize=(4.2 * len(observations), 4.0),
+        sharex=True,
+        sharey=True,
+    )
+    if len(observations) == 1:
+        axes = [axes]
+
+    for ax, observation in zip(axes, observations):
+        subset = curves[curves["observation"] == observation]
+        coordinate = int(subset["coordinate"].iloc[0])
+
+        ax.plot(
+            subset["x_value"],
+            subset["true_y"],
+            color="#202830",
+            linewidth=2.2,
+            label="true x_j^3",
+        )
+        ax.plot(
+            subset["x_value"],
+            subset["probed_y"],
+            color=REPORT_PALETTE[1],
+            linewidth=2.0,
+            label="probe(encoder_x)",
+        )
+
+        ax.axhline(0, linestyle=":", color="#5C6670", linewidth=1.0)
+        ax.axvline(0, linestyle=":", color="#5C6670", linewidth=1.0)
+        ax.set_title(f"Observation {observation}, coordinate {coordinate}")
+        ax.set_xlabel("Swept raw x_j")
+        ax.grid(axis="both", alpha=0.75)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+    axes[0].set_ylabel("Clean target y_j")
+    axes[0].legend()
+    fig.suptitle(title, y=1.03, fontsize=13, fontweight="semibold")
     return _finish_plot(fig, title=title, save_dir=save_dir, filename=filename)
