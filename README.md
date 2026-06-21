@@ -41,7 +41,7 @@ The final poster is available as a PDF:
 
 <img src="research-outputs/cca_contrastive_poster.jpg" alt="CCA contrastive poster preview" width="900">
 
-## Main Findings
+## My Main Findings
 
 This project was mostly about checking when contrastive encoders are learning
 real shared structure, and when they are just fitting the training pairs.
